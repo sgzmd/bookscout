@@ -1,7 +1,11 @@
 const Database = require('better-sqlite3');
 const path = require('path');
 
-const dbPath = process.env.DB_PATH || path.join(__dirname, 'bookscout.db');
+const dbPath = process.env.DB_PATH || (
+  process.env.NODE_ENV === 'test' 
+    ? path.join(__dirname, `test-db-${process.env.VITEST_WORKER_ID || 0}.db`)
+    : path.join(__dirname, 'bookscout.db')
+);
 const db = new Database(dbPath);
 db.pragma('journal_mode = WAL');
 

@@ -1,13 +1,14 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import request from 'supertest';
 import app from '../index';
-import { db } from '../db';
+import { db, init } from '../db';
 
 describe('Books Route', () => {
     const fetchMock = vi.fn();
     global.fetch = fetchMock;
 
     beforeEach(() => {
+        init();
         db.prepare('DELETE FROM books').run();
         db.prepare('DELETE FROM users').run();
     });
