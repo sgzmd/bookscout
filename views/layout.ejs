@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BookScout</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        emerald: {
+                            50: '#ecfdf5',
+                            100: '#d1fae5',
+                            400: '#34d399',
+                            500: '#10b981',
+                            600: '#059669',
+                            900: '#064e3b',
+                        }
+                    },
+                    boxShadow: {
+                        'soft': '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- HTMX -->
+    <script src="https://unpkg.com/htmx.org@1.9.10"></script>
+    <!-- Alpine.js -->
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.13.3/dist/cdn.min.js"></script>
+    <style>
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+        }
+        .htmx-indicator {
+            opacity: 0;
+            transition: opacity 200ms ease-in;
+        }
+        .htmx-request .htmx-indicator{
+            opacity: 1;
+        }
+        .htmx-request.htmx-indicator{
+            opacity: 1;
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-900 antialiased min-h-screen">
+    <%- body %>
+</body>
+</html>

@@ -1,0 +1,22 @@
+<% if (books.length === 0) { %>
+    <div class="p-4 text-slate-500 text-center">
+        No books found. <a href="#" class="text-emerald-600 underline">Add manually?</a>
+    </div>
+<% } else { %>
+    <div class="max-h-96 overflow-y-auto">
+        <% books.forEach(book => { %>
+            <div 
+                class="flex items-center p-3 hover:bg-emerald-50 cursor-pointer transition-colors border-b border-gray-100 last:border-0"
+                hx-get="/books/review/<%= book.google_id %>"
+                hx-target="body"
+                hx-push-url="true"
+            >
+                <img src="<%= book.cover_url %>" alt="<%= book.title %>" class="w-12 h-16 object-cover rounded shadow-sm mr-4">
+                <div>
+                    <h4 class="font-bold text-slate-800 text-sm leading-tight"><%= book.title %></h4>
+                    <p class="text-xs text-slate-500"><%= book.author %></p>
+                </div>
+            </div>
+        <% }) %>
+    </div>
+<% } %>

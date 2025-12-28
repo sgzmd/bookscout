@@ -1,0 +1,44 @@
+# Dependencies
+node_modules/
+
+# Environment files
+.env
+.env.*
+!.env.example
+
+# Database
+*.db
+*.db-shm
+*.db-wal
+*.sqlite
+
+# System files
+.DS_Store
+Thumbs.db
+
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Runtime data
+pids
+*.pid
+*.seed
+*.pid.lock
+
+# Test coverage
+coverage/
+*.lcov
+
+# IDE/Editor
+.vscode/
+.idea/
+
+# Project specific
+prompt/
+hints.md
+walkthrough.md
+prompt.md
