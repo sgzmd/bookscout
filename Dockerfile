@@ -4,7 +4,7 @@ WORKDIR /app
 
 COPY package*.json ./
 
-COPY package*.json ./
+
 RUN apk add --no-cache python3 make g++
 RUN --mount=type=cache,target=/root/.npm \
     npm ci --only=production

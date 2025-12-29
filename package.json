@@ -6,7 +6,7 @@
   "scripts": {
     "test": "vitest run",
     "lint": "eslint .",
-    "prepare": "husky"
+    "prepare": "husky || true"
   },
   "keywords": [],
   "author": "",
