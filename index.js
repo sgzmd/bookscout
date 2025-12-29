@@ -23,7 +23,7 @@ app.use(express.json());
 
 // Session setup (use a real secret in prod)
 app.use(session({
-    secret: 'keyboard cat',
+    secret: process.env.SESSION_SECRET || 'keyboard cat',
     resave: false,
     saveUninitialized: false
 }));
