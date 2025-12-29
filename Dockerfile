@@ -13,6 +13,9 @@ COPY . .
 ENV NODE_ENV=production
 ENV PORT=3000
 
+ARG GIT_COMMIT
+ENV GIT_COMMIT=${GIT_COMMIT}
+
 EXPOSE 3000
 
 CMD ["node", "index.js"]
