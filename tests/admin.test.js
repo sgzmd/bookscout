@@ -1,15 +1,13 @@
 
 const request = require('supertest');
 const app = require('../index');
-const { db } = require('../db');
+const { db, reset } = require('../db');
 
 describe('Admin Panel', () => {
     beforeAll(() => {
         // Setup initial data
         process.env.ADMIN_USER = 'admin@example.com';
-        
-        db.prepare('DELETE FROM books').run();
-        db.prepare('DELETE FROM users').run();
+        reset();
 
         const insertUser = db.prepare('INSERT INTO users (id, name, email) VALUES (?, ?, ?)');
         insertUser.run('admin-id', 'Admin User', 'admin@example.com');

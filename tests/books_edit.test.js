@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import request from 'supertest';
 import app from '../index';
-import { db, init } from '../db';
+import { db, init, reset } from '../db';
 import fs from 'fs';
 
 // Helper to add a book
@@ -17,8 +17,7 @@ describe('Book Edit & Delete', () => {
     
     beforeEach(() => {
         init();
-        db.prepare('DELETE FROM books').run();
-        db.prepare('DELETE FROM users').run();
+        reset();
         // Create dev user
         db.prepare('INSERT OR REPLACE INTO users (id, name, email) VALUES (?, ?, ?)').run('dev-user', 'Dev User', 'dev@example.com');
     });
