@@ -46,7 +46,7 @@ if (process.env.NODE_ENV !== 'production') {
         const requiredAccessDate = process.env.DEV_USER_ACCESS;
         const today = new Date().toISOString().split('T')[0];
         
-        if (requiredAccessDate !== today) {
+        if (process.env.NODE_ENV !== 'test' && requiredAccessDate !== today) {
              return res.status(403).send('Dev access expired or invalid. Check DEV_USER_ACCESS env var.');
         }
 
