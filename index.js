@@ -5,6 +5,7 @@ const path = require('path');
 const session = require('express-session');
 const passport = require('passport');
 const GoogleStrategy = require('passport-google-oauth20').Strategy;
+const csurf = require('csurf');
 const { init, db } = require('./db');
 
 // Initialize DB
@@ -31,6 +32,16 @@ app.use(session({
 
 app.use(passport.initialize());
 app.use(passport.session());
+
+// CSRF Protection
+const csrfProtection = csurf();
+app.use(csrfProtection);
+
+// Make CSRF token available to views
+app.use((req, res, next) => {
+  res.locals.csrfToken = req.csrfToken();
+  next();
+});
 
 const searchRouter = require('./routes/search');
 

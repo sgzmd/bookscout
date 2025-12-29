@@ -43,6 +43,10 @@ describe('Books Route', () => {
     // Login first
     await agent.get('/auth/dev');
 
+    // Get CSRF Token
+    const dashboard = await agent.get('/dashboard');
+    const csrfToken = dashboard.text.match(/name="csrf-token" content="(.*?)"/)[1];
+
     // Post book
     const bookData = {
       google_books_id: '12345',
@@ -51,7 +55,8 @@ describe('Books Route', () => {
       cover_url: 'http://example.com/cover.jpg',
       rating: 5,
       tags: 'Funny,Adventure',
-      notes: 'Great read!'
+      notes: 'Great read!',
+      _csrf: csrfToken
     };
 
     const res = await agent.post('/books')
@@ -69,7 +74,14 @@ describe('Books Route', () => {
   });
 
   it('should reject save if not logged in', async () => {
-    const res = await request(app).post('/books').send({});
+    // Need a fresh agent to get a CSRF token
+    const agent = request.agent(app);
+    const page = await agent.get('/');
+    const csrfToken = page.text.match(/name="csrf-token" content="(.*?)"/)[1];
+
+    const res = await agent.post('/books')
+      .type('form')
+      .send({ _csrf: csrfToken }); // Send empty body but with token
     expect(res.status).toBe(401);
   });
 });

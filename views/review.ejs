@@ -12,6 +12,7 @@
             <input type="hidden" name="author" value="<%= book.author %>">
             <input type="hidden" name="cover_url" value="<%= book.cover_url %>">
             <% } %>
+            <input type="hidden" name="_csrf" value="<%= csrfToken %>">
 
             <!-- Cover Section -->
             <div class="bg-emerald-50 p-8 flex flex-col items-center justify-center md:w-1/3">

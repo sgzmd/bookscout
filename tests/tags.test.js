@@ -35,6 +35,9 @@ describe('Tags System', () => {
     // Let's use POST to verify the full flow including sanitization
 
     // Book 1: Adventure, Funny
+    const dashboard = await agent.get('/dashboard');
+    const csrfToken = dashboard.text.match(/name="csrf-token" content="(.*?)"/)[1];
+
     await agent.post('/books')
       .type('form')
       .send({
@@ -42,7 +45,8 @@ describe('Tags System', () => {
         title: 'B1',
         author: 'A1',
         rating: 5,
-        tags: 'Adventure,Funny'
+        tags: 'Adventure,Funny',
+        _csrf: csrfToken
       });
 
     // Book 2: Funny, Scary
@@ -53,7 +57,8 @@ describe('Tags System', () => {
         title: 'B2',
         author: 'A2',
         rating: 5,
-        tags: 'funny, Scary ' // Messy input
+        tags: 'funny, Scary ', // Messy input
+        _csrf: csrfToken
       });
 
     // Fetch tags
@@ -85,6 +90,9 @@ describe('Tags System', () => {
     await agent.get('/auth/dev');
 
     // Post with messy tags
+    const dashboard = await agent.get('/dashboard');
+    const csrfToken = dashboard.text.match(/name="csrf-token" content="(.*?)"/)[1];
+
     await agent.post('/books')
       .type('form')
       .send({
@@ -92,7 +100,8 @@ describe('Tags System', () => {
         title: 'B3',
         author: 'A3',
         rating: 4,
-        tags: '  super   cool , 123bad '
+        tags: '  super   cool , 123bad ',
+        _csrf: csrfToken
       });
 
     // Verify in DB
