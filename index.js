@@ -67,42 +67,37 @@ if (process.env.NODE_ENV !== 'production') {
     });
 }
 
+const { createGoogleVerifyCallback } = require('./utils/auth_helper');
+
 passport.use(new GoogleStrategy({
     clientID: process.env.GOOGLE_CLIENT_ID,
     clientSecret: process.env.GOOGLE_CLIENT_SECRET,
     callbackURL: "/auth/google/callback",
     proxy: true
   },
-  function(accessToken, refreshToken, profile, cb) {
-      const user = {
-          id: profile.id,
-          name: profile.displayName,
-          email: profile.emails && profile.emails.length > 0 ? profile.emails[0].value : null
-      };
-      
-      try {
-          // Re-using the DB connection from db.js directly for now, 
-          // but should probably export a helper.
-          // Since db.js exports { db }, we can use it.
-          const stmt = require('./db').db.prepare('INSERT OR REPLACE INTO users (id, name, email) VALUES (?, ?, ?)');
-          stmt.run(user.id, user.name, user.email);
-          return cb(null, user);
-      } catch (err) {
-          console.error("Error upserting user:", err);
-          return cb(err);
-      }
-  }
+  createGoogleVerifyCallback(require('./db').db)
 ));
 
 app.get('/auth/google',
   passport.authenticate('google', { scope: ['profile', 'email'] }));
 
-app.get('/auth/google/callback', 
-  passport.authenticate('google', { failureRedirect: '/' }),
-  function(req, res) {
-    // Successful authentication, redirect dashboard.
-    res.redirect('/dashboard');
-  });
+app.get('/auth/google/callback', function(req, res, next) {
+    passport.authenticate('google', function(err, user, info) {
+        if (err) {
+            if (err.message === 'REGISTRATION_CLOSED') {
+                return res.redirect('/?error=registration_closed');
+            }
+            console.error('Auth error:', err);
+            return res.redirect('/?error=auth_failed');
+        }
+        if (!user) { return res.redirect('/'); }
+        
+        req.logIn(user, function(err) {
+            if (err) { return next(err); }
+            return res.redirect('/dashboard');
+        });
+    })(req, res, next);
+});
 
 // Serialize/Deserialize User (Mock for now)
 passport.serializeUser((user, done) => {
@@ -116,7 +111,10 @@ passport.deserializeUser((user, done) => {
 
 // Routes
 app.get('/', (req, res, next) => {
-    res.render('index', { user: req.user || null }, (err, html) => {
+    res.render('index', { 
+        user: req.user || null,
+        error: req.query.error || null
+    }, (err, html) => {
         if (err) return next(err);
         res.render('layout', { body: html });
     });

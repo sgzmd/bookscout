@@ -3,6 +3,18 @@
         <h1 class="text-4xl font-bold text-emerald-900 mb-4">BookScout</h1>
         <p class="text-lg text-slate-600 mb-8">Ready to read? Track your journey, one page at a time.</p>
         
+        <% if (locals.error === 'registration_closed') { %>
+            <div class="bg-amber-50 border-l-4 border-amber-500 text-amber-700 p-4 mb-6 text-left" role="alert">
+                <p class="font-bold">Registration Closed</p>
+                <p class="text-sm">We are not accepting new users at this time.</p>
+            </div>
+        <% } else if (locals.error) { %>
+            <div class="bg-red-50 border-l-4 border-red-500 text-red-700 p-4 mb-6 text-left" role="alert">
+                <p class="font-bold">Error</p>
+                <p class="text-sm">Authentication failed. Please try again.</p>
+            </div>
+        <% } %>
+
         <% if (user) { %>
             <a href="/dashboard" class="block w-full py-3 px-6 bg-emerald-400 hover:bg-emerald-500 text-white rounded-2xl font-bold text-lg transition-transform transform hover:scale-105 shadow-lg">
                 Go to Dashboard
