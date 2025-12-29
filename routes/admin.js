@@ -41,7 +41,12 @@ router.get('/books', (req, res) => {
         params.push(wildcard, wildcard, wildcard);
     }
     
-    query += ` ORDER BY ${sort} ${order.toUpperCase()}`;
+    // Validate sort and order to prevent SQL injection
+    const validSorts = ['title', 'author', 'created_at', 'rating'];
+    const safeSort = validSorts.includes(sort) ? sort : 'created_at';
+    const safeOrder = ['asc', 'desc'].includes(order.toLowerCase()) ? order.toUpperCase() : 'DESC';
+
+    query += ` ORDER BY ${safeSort} ${safeOrder}`;
 
     try {
         const stmt = db.prepare(query);
@@ -51,7 +56,7 @@ router.get('/books', (req, res) => {
             user: req.user, 
             currentPath: '/admin/books', 
             query: req.query,
-            validSorts: ['title', 'author', 'created_at', 'rating'] 
+            validSorts 
         });
     } catch (err) {
         console.error('Admin books error:', err);
