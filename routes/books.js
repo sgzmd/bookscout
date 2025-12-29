@@ -1,6 +1,54 @@
 const express = require('express');
 const router = express.Router();
 const { db } = require('../db');
+const { PREDEFINED_TAGS, sanitizeTag } = require('../utils/tags');
+
+// GET /books/tags - Fetch sorted tags for user
+router.get('/tags', (req, res) => {
+    if (!req.user) return res.json(PREDEFINED_TAGS); // Fallback if not logged in
+
+    try {
+        // 1. Fetch user's tags
+        const stmt = db.prepare('SELECT tags FROM books WHERE user_id = ?');
+        const rows = stmt.all(req.user.id);
+
+        // 2. Count frequencies
+        const tagCounts = {};
+        
+        // Initialize with predefined tags (count 0 to ensure they appear if not used yet? 
+        // Or just merge them later? 
+        // The plan said "Merge with static PREDEFINED_TAGS".
+        // Let's count used tags first.
+        rows.forEach(row => {
+            if (row.tags) {
+                row.tags.split(',').forEach(tag => {
+                    const t = tag.trim();
+                    if (t) tagCounts[t] = (tagCounts[t] || 0) + 1;
+                });
+            }
+        });
+
+        // 3. Create unique list
+        const allTags = new Set([...Object.keys(tagCounts), ...PREDEFINED_TAGS]);
+        
+        // 4. Sort
+        const sortedTags = Array.from(allTags).sort((a, b) => {
+            const countA = tagCounts[a] || 0;
+            const countB = tagCounts[b] || 0;
+            
+            // Sort by frequency DESC
+            if (countB !== countA) return countB - countA;
+            
+            // Then alphabetical ASC
+            return a.localeCompare(b);
+        });
+
+        res.json(sortedTags);
+    } catch (error) {
+        console.error('Fetch tags error:', error);
+        res.status(500).json({ error: 'Failed to fetch tags' });
+    }
+});
 
 // GET /books/review/:google_id - Show review form
 router.get('/review/:google_id', async (req, res) => {
@@ -47,13 +95,16 @@ router.post('/', (req, res) => {
     
     const { google_books_id, title, author, cover_url, rating, tags, notes } = req.body;
     
+    // Sanitize tags
+    const sanitizedTags = (tags || '').split(',').map(tag => sanitizeTag(tag)).filter(Boolean).join(',');
+    
     try {
         const stmt = db.prepare(`
             INSERT INTO books (user_id, title, author, cover_url, google_books_id, rating, tags, notes)
             VALUES (?, ?, ?, ?, ?, ?, ?, ?)
         `);
         
-        stmt.run(req.user.id, title, author, cover_url, google_books_id, rating, tags, notes);
+        stmt.run(req.user.id, title, author, cover_url, google_books_id, rating, sanitizedTags, notes);
         
         // Redirect to dashboard
         res.redirect('/dashboard');
@@ -100,6 +151,9 @@ router.post('/:id/edit', (req, res) => {
     if (!req.user) return res.status(401).send('Unauthorized');
     const { id } = req.params;
     const { rating, tags, notes } = req.body;
+    
+    // Sanitize tags
+    const sanitizedTags = (tags || '').split(',').map(tag => sanitizeTag(tag)).filter(Boolean).join(',');
 
     try {
         const stmt = db.prepare(`
@@ -108,7 +162,7 @@ router.post('/:id/edit', (req, res) => {
             WHERE id = ? AND user_id = ?
         `);
         
-        const info = stmt.run(rating, tags, notes, id, req.user.id);
+        const info = stmt.run(rating, sanitizedTags, notes, id, req.user.id);
         
         if (info.changes === 0) return res.status(404).send('Book not found');
         

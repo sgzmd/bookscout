@@ -56,23 +56,161 @@
                 </div>
 
                 <!-- Tags -->
-                <div>
+                <!-- Tags -->
+                <div x-data="{ 
+                    selectedTags: '<%= book.tags || '' %>'.split(',').filter(Boolean),
+                    allTags: [],
+                    showModal: false,
+                    newTagInput: '',
+                    
+                    async init() {
+                        try {
+                            const res = await fetch('/books/tags');
+                            if (res.ok) this.allTags = await res.json();
+                        } catch (e) { console.error(e); }
+                    },
+                    
+                    // Sanitize helper
+                    formatTag(t) {
+                        return t.replace(/[^a-zA-Z\s]/g, '').trim()
+                                .split(' ')
+                                .map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase())
+                                .join(' ');
+                    },
+
+                    addCustomTag() {
+                        const clean = this.formatTag(this.newTagInput);
+                        if (clean && !this.selectedTags.includes(clean)) {
+                            this.selectedTags.push(clean);
+                            // Also add to allTags if not present so it shows in the list immediately
+                            if (!this.allTags.includes(clean)) {
+                                this.allTags.unshift(clean);
+                            }
+                        }
+                        this.newTagInput = '';
+                    },
+
+                    toggleTag(tag) {
+                        if (this.selectedTags.includes(tag)) {
+                            this.selectedTags = this.selectedTags.filter(t => t !== tag);
+                        } else {
+                            this.selectedTags.push(tag);
+                        }
+                    },
+                    
+                    get popularTags() {
+                        return this.allTags.slice(0, 5);
+                    },
+                    
+                    get sortedAllTags() {
+                        return this.allTags;
+                    }
+                }" class="space-y-4">
                     <label class="block text-sm font-medium text-slate-500 mb-2">Tags</label>
-                    <div x-data="{ selectedTags: '<%= book.tags || '' %>'.split(',').filter(Boolean) }" class="space-y-4">
-                      <input type="hidden" name="tags" :value="selectedTags.join(',')">
-                      
-                      <div class="flex flex-wrap gap-2">
-                        <% ['Funny', 'Adventure', 'Fantasy', 'Scary', 'Sad', 'Educational'].forEach(tag => { %>
-                          <button 
+                    <input type="hidden" name="tags" :value="selectedTags.join(',')">
+                    
+                    <!-- Main View: Selected + Top Popular + Add Button -->
+                    <div class="flex flex-wrap gap-2 items-center">
+                        <!-- Selected Tags -->
+                        <template x-for="tag in selectedTags" :key="'sel-'+tag">
+                            <button 
+                                type="button"
+                                @click="toggleTag(tag)"
+                                class="px-4 py-2 rounded-full border text-sm font-medium transition-colors bg-emerald-100 text-emerald-700 border-emerald-300 flex items-center group"
+                            >
+                                <span x-text="tag"></span>
+                                <span class="ml-2 text-emerald-500 hover:text-emerald-900 group-hover:text-emerald-900">&times;</span>
+                            </button>
+                        </template>
+
+                        <!-- Top Popular (that are not selected) -->
+                        <template x-for="tag in popularTags.filter(t => !selectedTags.includes(t))" :key="'pop-'+tag">
+                            <button 
+                                type="button"
+                                @click="toggleTag(tag)"
+                                class="px-4 py-2 rounded-full border text-sm font-medium transition-colors bg-gray-50 text-slate-600 border-gray-200 hover:bg-gray-100"
+                            >
+                                <span class="text-slate-400 mr-1">+</span>
+                                <span x-text="tag"></span>
+                            </button>
+                        </template>
+
+                        <!-- Add Tag Button -->
+                        <button 
                             type="button"
-                            @click="selectedTags.includes('<%= tag %>') ? selectedTags = selectedTags.filter(t => t !== '<%= tag %>') : selectedTags.push('<%= tag %>')"
-                            :class="selectedTags.includes('<%= tag %>') ? 'bg-emerald-100 text-emerald-700 border-emerald-300' : 'bg-gray-50 text-slate-600 border-gray-200'"
-                            class="px-4 py-2 rounded-full border text-sm font-medium transition-colors"
-                          >
-                            <%= tag %>
-                          </button>
-                        <% }) %>
-                      </div>
+                            @click="showModal = true"
+                            class="px-4 py-2 rounded-full border border-dashed border-gray-300 text-slate-500 text-sm hover:border-emerald-400 hover:text-emerald-600 transition-colors"
+                        >
+                            + Add Tag
+                        </button>
+                    </div>
+
+                    <!-- Modal -->
+                    <div 
+                        x-show="showModal" 
+                        style="display: none;"
+                        class="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
+                        x-transition.opacity
+                    >
+                        <div 
+                            @click.away="showModal = false"
+                            class="bg-white rounded-3xl shadow-2xl w-full max-w-lg overflow-hidden flex flex-col max-h-[80vh]"
+                        >
+                            <div class="p-6 border-b flex justify-between items-center bg-gray-50">
+                                <h3 class="text-xl font-bold text-slate-800">Manage Tags</h3>
+                                <button type="button" @click="showModal = false" class="text-slate-400 hover:text-slate-600">
+                                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                                </button>
+                            </div>
+                            
+                            <!-- Custom Tag Input -->
+                            <div class="p-6 pb-2 border-b">
+                                <div class="relative">
+                                    <input 
+                                        type="text" 
+                                        x-model="newTagInput" 
+                                        @keydown.enter.prevent="addCustomTag()"
+                                        placeholder="Type new tag and press Enter..." 
+                                        class="w-full p-4 pr-12 rounded-xl border-2 border-gray-200 focus:border-emerald-400 focus:ring-0 text-lg shadow-sm"
+                                    >
+                                    <button 
+                                        type="button" 
+                                        @click="addCustomTag()"
+                                        class="absolute right-3 top-3 p-2 bg-emerald-100 text-emerald-600 rounded-lg hover:bg-emerald-200 disabled:opacity-50"
+                                        :disabled="!newTagInput.trim()"
+                                    >
+                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Scrollable Tag List -->
+                            <div class="p-6 overflow-y-auto flex-1 custom-scrollbar">
+                                <div class="flex flex-wrap gap-2">
+                                    <template x-for="tag in sortedAllTags" :key="'modal-'+tag">
+                                        <button 
+                                            type="button"
+                                            @click="toggleTag(tag)"
+                                            :class="selectedTags.includes(tag) ? 'bg-emerald-100 text-emerald-700 border-emerald-300 ring-2 ring-emerald-200' : 'bg-gray-50 text-slate-600 border-gray-200 hover:border-gray-300'"
+                                            class="px-4 py-2 rounded-full border text-sm font-medium transition-all"
+                                        >
+                                            <span x-text="tag"></span>
+                                            <span x-show="selectedTags.includes(tag)" class="ml-1 text-emerald-600">&check;</span>
+                                        </button>
+                                    </template>
+                                </div>
+                            </div>
+
+                            <div class="p-6 border-t bg-gray-50 flex justify-end">
+                                <button 
+                                    type="button" 
+                                    @click="showModal = false"
+                                    class="px-8 py-3 bg-emerald-500 hover:bg-emerald-600 text-white font-bold rounded-xl shadow-lg hover:shadow-xl transition-all"
+                                >
+                                    Done
+                                </button>
+                            </div>
+                        </div>
                     </div>
                 </div>
 

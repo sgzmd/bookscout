@@ -12,6 +12,9 @@ init();
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+// Trust First Proxy
+app.set('trust proxy', 1);
+
 // Middleware
 app.set('view engine', 'ejs');
 app.use(express.static(path.join(__dirname, 'public')));
@@ -34,27 +37,30 @@ const booksRouter = require('./routes/books');
 app.use('/books', booksRouter);
 
 // Mock Auth for Dev
-app.get('/auth/dev', (req, res, next) => {
-    const user = { id: 'dev-user', name: 'Dev User', email: 'dev@example.com' };
-    try {
-        const stmt = require('./db').db.prepare('INSERT OR REPLACE INTO users (id, name, email) VALUES (?, ?, ?)');
-        stmt.run(user.id, user.name, user.email);
-    } catch (err) {
-        console.error('Failed to upsert dev user:', err);
-        return next(err);
-    }
+if (process.env.NODE_ENV !== 'production') {
+    app.get('/auth/dev', (req, res, next) => {
+        const user = { id: 'dev-user', name: 'Dev User', email: 'dev@example.com' };
+        try {
+            const stmt = require('./db').db.prepare('INSERT OR REPLACE INTO users (id, name, email) VALUES (?, ?, ?)');
+            stmt.run(user.id, user.name, user.email);
+        } catch (err) {
+            console.error('Failed to upsert dev user:', err);
+            return next(err);
+        }
 
-    // Log in as a dev user
-    req.login(user, (err) => {
-        if (err) { return next(err); }
-        return res.redirect('/dashboard');
+        // Log in as a dev user
+        req.login(user, (err) => {
+            if (err) { return next(err); }
+            return res.redirect('/dashboard');
+        });
     });
-});
+}
 
 passport.use(new GoogleStrategy({
     clientID: process.env.GOOGLE_CLIENT_ID,
     clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-    callbackURL: "/auth/google/callback"
+    callbackURL: "/auth/google/callback",
+    proxy: true
   },
   function(accessToken, refreshToken, profile, cb) {
       const user = {
