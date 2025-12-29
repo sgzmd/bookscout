@@ -1,0 +1,29 @@
+{
+  "env": {
+    "node": true,
+    "es2021": true,
+    "jest": true,
+    "vitest-globals/env": true
+  },
+  "extends": [
+    "airbnb-base",
+    "plugin:vitest-globals/recommended"
+  ],
+  "parserOptions": {
+    "ecmaVersion": 12,
+    "sourceType": "module"
+  },
+  "rules": {
+    "no-console": "warn",
+    "eqeqeq": "error",
+    "curly": "error",
+    "comma-dangle": ["error", "only-multiline"],
+    "class-methods-use-this": "off",
+    "no-underscore-dangle": "off",
+    "import/extensions": "off",
+    "import/no-extraneous-dependencies": ["error", {"devDependencies": true}],
+    "camelcase": "off",
+    "consistent-return": "off",
+    "max-len": "off"
+  }
+}

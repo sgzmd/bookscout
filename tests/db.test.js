@@ -1,8 +1,10 @@
-import { describe, it, expect, beforeEach, afterEach } from 'vitest';
+import {
+  describe, it, expect, beforeAll,
+} from 'vitest';
 import { db, init } from '../db';
 
 describe('Database Schema', () => {
-  beforeEach(() => {
+  beforeAll(() => {
     // In-memory DB for testing would be better, but for now we rely on the file.
     // Actually, better-sqlite3 relies on the constructor.
     // To test safely, we should probably mock the path or use :memory: if the module allowed injection.
