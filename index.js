@@ -36,9 +36,20 @@ app.use('/search', searchRouter);
 const booksRouter = require('./routes/books');
 app.use('/books', booksRouter);
 
+const adminRouter = require('./routes/admin');
+app.use('/admin', adminRouter);
+
 // Mock Auth for Dev
 if (process.env.NODE_ENV !== 'production') {
     app.get('/auth/dev', (req, res, next) => {
+        // Simple security check: restrict dev access by date
+        const requiredAccessDate = process.env.DEV_USER_ACCESS;
+        const today = new Date().toISOString().split('T')[0];
+        
+        if (requiredAccessDate !== today) {
+             return res.status(403).send('Dev access expired or invalid. Check DEV_USER_ACCESS env var.');
+        }
+
         const user = { id: 'dev-user', name: 'Dev User', email: 'dev@example.com' };
         try {
             const stmt = require('./db').db.prepare('INSERT OR REPLACE INTO users (id, name, email) VALUES (?, ?, ?)');

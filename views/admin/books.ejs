@@ -1,0 +1,133 @@
+
+<div class="space-y-6">
+    <!-- Header -->
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+            <h1 class="text-2xl font-bold text-slate-900">All Books Registry</h1>
+            <p class="text-slate-500">Total Books Logged: <strong><%= books.length %></strong></p>
+        </div>
+        <div class="flex items-center gap-3">
+            <a href="/admin/books/export" class="inline-flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 rounded-lg text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition-colors shadow-sm font-medium text-sm">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                Export CSV
+            </a>
+            <!-- Manual Entry Placeholder -->
+            <button onclick="alert('Manual entry feature coming soon!')" class="inline-flex items-center gap-2 px-4 py-2 bg-emerald-500 rounded-lg text-white hover:bg-emerald-600 transition-colors shadow-sm font-medium text-sm">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                Manual Entry
+            </button>
+        </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-100 flex flex-col md:flex-row gap-4 items-center justify-between">
+        <form action="/admin/books" method="GET" class="relative flex-1 w-full md:max-w-md">
+            <input type="text" name="filter" placeholder="Search by title, author, or user..." class="w-full pl-10 pr-4 py-2 rounded-lg border border-slate-200 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 outline-none text-sm" value="<%= typeof query !== 'undefined' ? query.filter : '' %>">
+            <svg class="absolute left-3 top-2.5 w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+        </form>
+        
+        <div class="flex items-center gap-2">
+            <!-- Filter Dropdowns Placeholders -->
+             <div class="relative">
+                 <button class="px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm text-slate-600 hover:bg-slate-100 flex items-center gap-2">
+                     Rating
+                     <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                 </button>
+             </div>
+             <div class="relative">
+                 <button class="px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm text-slate-600 hover:bg-slate-100 flex items-center gap-2">
+                     Tags
+                     <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                 </button>
+             </div>
+        </div>
+    </div>
+
+    <!-- Table -->
+    <div class="bg-white rounded-xl shadow-sm border border-slate-100 overflow-hidden">
+        <div class="overflow-x-auto">
+            <table class="w-full text-left text-sm">
+                <thead class="bg-slate-50 border-b border-slate-100 text-xs uppercase text-slate-500 font-semibold tracking-wider">
+                    <tr>
+                        <th class="px-6 py-4">Book Title</th>
+                        <th class="px-6 py-4">Author</th>
+                        <th class="px-6 py-4">Logged By</th>
+                        <th class="px-6 py-4">Rating</th>
+                        <th class="px-6 py-4">Tags</th>
+                        <th class="px-6 py-4">Date Added</th>
+                        <th class="px-6 py-4"></th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100">
+                    <% books.forEach(book => { %>
+                    <tr class="hover:bg-slate-50 transition-colors">
+                        <td class="px-6 py-4">
+                            <div class="flex items-center gap-4">
+                                <img src="<%= book.cover_url %>" alt="" class="w-10 h-14 object-cover rounded shadow-sm bg-slate-200">
+                                <span class="font-bold text-slate-900"><%= book.title %></span>
+                            </div>
+                        </td>
+                        <td class="px-6 py-4 font-medium text-slate-600"><%= book.author %></td>
+                        <td class="px-6 py-4">
+                            <div class="flex items-center gap-2">
+                                <span class="w-6 h-6 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center text-xs font-bold uppercase">
+                                    <%= (book.user_name ? book.user_name[0] : (book.user_email ? book.user_email[0] : 'U')) %>
+                                </span>
+                                <div class="flex flex-col">
+                                    <span class="text-slate-900 font-medium text-xs"><%= book.user_name || 'Unknown' %></span>
+                                    <span class="text-slate-400 text-[10px]"><%= book.user_email %></span>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="px-6 py-4">
+                            <div class="flex text-yellow-400 text-base">
+                                <% for(let i=0; i<5; i++) { %>
+                                    <span><%= i < book.rating ? '★' : '☆' %></span>
+                                <% } %>
+                            </div>
+                        </td>
+                        <td class="px-6 py-4">
+                            <div class="flex flex-wrap gap-1 max-w-[200px]">
+                                <% if (book.tags) { %>
+                                    <% book.tags.split(',').slice(0, 3).forEach(tag => { %>
+                                        <span class="px-2 py-0.5 bg-emerald-50 text-emerald-700 text-[10px] rounded-full font-medium border border-emerald-100"><%= tag %></span>
+                                    <% }) %>
+                                    <% if(book.tags.split(',').length > 3) { %>
+                                        <span class="text-[10px] text-slate-400">+<%= book.tags.split(',').length - 3 %> more</span>
+                                    <% } %>
+                                <% } else { %>
+                                    <span class="text-slate-400 italic text-xs">No tags</span>
+                                <% } %>
+                            </div>
+                        </td>
+                        <td class="px-6 py-4 text-slate-500 whitespace-nowrap">
+                            <%= new Date(book.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) %>
+                        </td>
+                        <td class="px-6 py-4 text-right">
+                             <button class="text-slate-400 hover:text-slate-600">
+                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z"></path></svg>
+                             </button>
+                        </td>
+                    </tr>
+                    <% }) %>
+                    <% if (books.length === 0) { %>
+                        <tr>
+                            <td colspan="7" class="px-6 py-12 text-center text-slate-500">
+                                No books found matching your criteria.
+                            </td>
+                        </tr>
+                    <% } %>
+                </tbody>
+            </table>
+        </div>
+        
+        <!-- Pagination (Mock) -->
+        <div class="px-6 py-4 border-t border-slate-100 flex items-center justify-between">
+            <p class="text-sm text-slate-500">Showing <strong>1</strong> to <strong><%= books.length %></strong> of <strong><%= books.length %></strong> results</p>
+            <div class="flex gap-2">
+                <button class="px-4 py-2 border border-slate-200 rounded-lg text-sm text-slate-500 hover:bg-slate-50 disabled:opacity-50" disabled>Previous</button>
+                <button class="px-4 py-2 border border-slate-200 rounded-lg text-sm text-slate-500 hover:bg-slate-50" disabled>Next</button>
+            </div>
+        </div>
+    </div>
+</div>
