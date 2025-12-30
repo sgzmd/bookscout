@@ -1,6 +1,8 @@
 const Database = require('better-sqlite3');
 const path = require('path');
 
+const { program } = require('commander');
+
 let db;
 if (process.env.NODE_ENV === 'test') {
   if (!global.__TEST_DB_INSTANCE__) {
@@ -9,7 +11,26 @@ if (process.env.NODE_ENV === 'test') {
   }
   db = global.__TEST_DB_INSTANCE__;
 } else {
-  const dbPath = process.env.DB_PATH || path.join(__dirname, 'bookscout.db');
+  program
+    .option('--db <path>', 'Database file path')
+    .allowUnknownOption(true);
+
+  // We only parse if we haven't parsed already (commander is a singleton)
+  // But in this simple app, top-level is fine.
+  // To avoid issues if this module is loaded multiple times or if something else uses commander:
+  // parseOptions triggers parsing.
+  // NOTE: parsing relies on process.argv.
+  try {
+    program.parse(process.argv);
+  } catch (e) {
+    // ignore
+  }
+
+  const options = program.opts();
+  const dbPath = options.db || process.env.DB_PATH || path.join(__dirname, 'bookscout.db');
+
+  console.log(`Using database: ${dbPath}`);
+
   db = new Database(dbPath);
   db.pragma('journal_mode = WAL');
 }

@@ -26,7 +26,9 @@ router.get('/', (req, res) => {
 
 // GET /admin/books - All Books Registry
 router.get('/books', (req, res) => {
-  const { sort = 'created_at', order = 'desc', filter } = req.query;
+  const {
+    sort = 'created_at', order = 'desc', filter, user: userId
+  } = req.query;
 
   let query = `
         SELECT books.*, users.email as user_email, users.name as user_name 
@@ -34,12 +36,32 @@ router.get('/books', (req, res) => {
         LEFT JOIN users ON books.user_id = users.id
     `;
 
+  // Fetch all users for the filter dropdown
+  let allUsers = [];
+  try {
+    const usersStmt = db.prepare('SELECT id, name, email FROM users ORDER BY name ASC, email ASC');
+    allUsers = usersStmt.all();
+  } catch (err) {
+    console.error('Error fetching users for filter:', err);
+  }
+
   // Simple filter implementation
   const params = [];
+  const conditions = [];
+
   if (filter) {
-    query += ' WHERE books.title LIKE ? OR books.author LIKE ? OR users.email LIKE ?';
+    conditions.push('(books.title LIKE ? OR books.author LIKE ? OR users.email LIKE ?)');
     const wildcard = `%${filter}%`;
     params.push(wildcard, wildcard, wildcard);
+  }
+
+  if (userId) {
+    conditions.push('books.user_id = ?');
+    params.push(userId);
+  }
+
+  if (conditions.length > 0) {
+    query += ` WHERE ${conditions.join(' AND ')}`;
   }
 
   // Validate sort and order to prevent SQL injection
@@ -57,7 +79,9 @@ router.get('/books', (req, res) => {
       user: req.user,
       currentPath: '/admin/books',
       query: req.query,
-      validSorts
+      validSorts,
+      allUsers,
+      selectedUser: userId
     });
   } catch (err) {
     console.error('Admin books error:', err);

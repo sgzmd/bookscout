@@ -7,6 +7,15 @@
             <p class="text-slate-500">Total Books Logged: <strong><%= books.length %></strong></p>
         </div>
         <div class="flex items-center gap-3">
+            <button onclick="copyToClipboard(this)"
+                class="inline-flex items-center gap-2 px-4 py-2 bg-indigo-50 border border-indigo-100 rounded-lg text-indigo-700 hover:bg-indigo-100 transition-colors shadow-sm font-medium text-sm">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M19.428 15.428a2 2 0 00-1.022-.547l-2.384-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z">
+                    </path>
+                </svg>
+                Copy for AI
+            </button>
             <a href="/admin/books/export" class="inline-flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 rounded-lg text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition-colors shadow-sm font-medium text-sm">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
                 Export CSV
@@ -20,28 +29,45 @@
     </div>
 
     <!-- Filters -->
-    <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-100 flex flex-col md:flex-row gap-4 items-center justify-between">
-        <form action="/admin/books" method="GET" class="relative flex-1 w-full md:max-w-md">
+    <form action="/admin/books" method="GET"
+        class="bg-white p-4 rounded-xl shadow-sm border border-slate-100 flex flex-col md:flex-row gap-4 items-center justify-between">
+        <div class="relative flex-1 w-full md:max-w-md">
             <input type="text" name="filter" placeholder="Search by title, author, or user..." class="w-full pl-10 pr-4 py-2 rounded-lg border border-slate-200 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 outline-none text-sm" value="<%= typeof query !== 'undefined' ? query.filter : '' %>">
             <svg class="absolute left-3 top-2.5 w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
-        </form>
+        </div>
         
         <div class="flex items-center gap-2">
+            <!-- User Filter -->
+            <select name="user" onchange="this.form.submit()"
+                class="px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm text-slate-600 hover:bg-slate-100 outline-none focus:ring-2 focus:ring-emerald-500 cursor-pointer">
+                <option value="">All Users</option>
+                <% if (typeof allUsers !=='undefined' ) { %>
+                    <% allUsers.forEach(u=> { %>
+                        <option value="<%= u.id %>" <%=(typeof selectedUser !=='undefined' &&
+                            selectedUser==u.id) ? 'selected' : '' %>>
+                            <%= u.name || u.email %>
+                        </option>
+                        <% }) %>
+                            <% } %>
+            </select>
+
             <!-- Filter Dropdowns Placeholders -->
              <div class="relative">
-                 <button class="px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm text-slate-600 hover:bg-slate-100 flex items-center gap-2">
+                <button type="button"
+                    class="px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm text-slate-600 hover:bg-slate-100 flex items-center gap-2">
                      Rating
                      <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
                  </button>
              </div>
              <div class="relative">
-                 <button class="px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm text-slate-600 hover:bg-slate-100 flex items-center gap-2">
+                <button type="button"
+                    class="px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm text-slate-600 hover:bg-slate-100 flex items-center gap-2">
                      Tags
                      <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
                  </button>
              </div>
         </div>
-    </div>
+    </form>
 
     <!-- Table -->
     <div class="bg-white rounded-xl shadow-sm border border-slate-100 overflow-hidden">
@@ -131,3 +157,42 @@
         </div>
     </div>
 </div>
+
+<script>
+    function copyToClipboard(button) {
+        const rows = document.querySelectorAll('tbody tr');
+        let markdown = '| Title | Author | Rating |\n|---|---|---|\n';
+
+        rows.forEach(row => {
+            const titleEl = row.querySelector('.font-bold.text-slate-900');
+            if (!titleEl) return; // Skip empty/info rows
+
+            const title = titleEl.textContent.trim();
+            const author = row.querySelectorAll('td')[1].textContent.trim();
+            // Count stars by checking content of the rating cell
+            const ratingText = row.querySelectorAll('td')[3].textContent;
+            const rating = (ratingText.match(/★/g) || []).length;
+
+            markdown += `| ${title} | ${author} | ${rating} |\n`;
+        });
+
+        navigator.clipboard.writeText(markdown).then(() => {
+            const originalText = button.innerHTML;
+            button.innerHTML = `
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                Copied!
+            `;
+            button.classList.remove('bg-indigo-50', 'text-indigo-700', 'border-indigo-100');
+            button.classList.add('bg-green-50', 'text-green-700', 'border-green-100');
+
+            setTimeout(() => {
+                button.innerHTML = originalText;
+                button.classList.remove('bg-green-50', 'text-green-700', 'border-green-100');
+                button.classList.add('bg-indigo-50', 'text-indigo-700', 'border-indigo-100');
+            }, 2000);
+        }).catch(err => {
+            console.error('Failed to copy: ', err);
+            alert('Failed to copy to clipboard');
+        });
+    }
+</script>
