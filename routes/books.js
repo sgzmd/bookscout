@@ -100,6 +100,10 @@ router.post('/', (req, res) => {
   // Sanitize tags
   const sanitizedTags = (tags || '').split(',').map((tag) => sanitizeTag(tag)).filter(Boolean).join(',');
 
+  if (!rating || Number(rating) === 0) {
+    return res.status(400).send('Rating is required');
+  }
+
   try {
     const stmt = db.prepare(`
             INSERT INTO books (user_id, title, author, cover_url, google_books_id, rating, tags, notes)
@@ -155,6 +159,10 @@ router.post('/:id/edit', (req, res) => {
 
   // Sanitize tags
   const sanitizedTags = (tags || '').split(',').map((tag) => sanitizeTag(tag)).filter(Boolean).join(',');
+
+  if (!rating || Number(rating) === 0) {
+    return res.status(400).send('Rating is required');
+  }
 
   try {
     const stmt = db.prepare(`

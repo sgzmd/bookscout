@@ -84,4 +84,34 @@ describe('Books Route', () => {
       .send({ _csrf: csrfToken }); // Send empty body but with token
     expect(res.status).toBe(401);
   });
+
+  it('should reject save with 0 rating', async () => {
+    const agent = request.agent(app);
+
+    // Login
+    await agent.get('/auth/dev');
+
+    // Get CSRF Token
+    const dashboard = await agent.get('/dashboard');
+    const csrfToken = dashboard.text.match(/name="csrf-token" content="(.*?)"/)[1];
+
+    // Post book with 0 rating
+    const bookData = {
+      google_books_id: '12345',
+      title: 'My Unrated Book',
+      author: 'Me',
+      cover_url: 'http://example.com/cover.jpg',
+      rating: 0,
+      tags: 'Test',
+      notes: '',
+      _csrf: csrfToken
+    };
+
+    const res = await agent.post('/books')
+      .type('form')
+      .send(bookData);
+
+    expect(res.status).toBe(400);
+    expect(res.text).toContain('Rating is required');
+  });
 });

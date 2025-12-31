@@ -1,64 +1,85 @@
-<div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm"
-     role="dialog"
-     aria-modal="true"
-     @click.self="window.location.href='/dashboard'"> <!-- Simple close on backdrop click (navigation) -->
+<div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm" role="dialog"
+    aria-modal="true" @click.self="window.location.href='/dashboard'">
+    <!-- Simple close on backdrop click (navigation) -->
 
-    <div class="bg-white rounded-3xl shadow-2xl w-full max-w-2xl overflow-hidden animate-in fade-in zoom-in duration-200">
-        <form action="<%= isEdit ? `/books/${book.id}/edit` : '/books' %>" method="POST" class="flex flex-col md:flex-row">
+    <div
+        class="bg-white rounded-3xl shadow-2xl w-full max-w-2xl overflow-hidden animate-in fade-in zoom-in duration-200">
+        <form action="<%= isEdit ? `/books/${book.id}/edit` : '/books' %>" method="POST"
+            class="flex flex-col md:flex-row">
             <!-- Hidden Fields -->
             <% if (!isEdit) { %>
-            <input type="hidden" name="google_books_id" value="<%= book.google_id %>">
-            <input type="hidden" name="title" value="<%= book.title %>">
-            <input type="hidden" name="author" value="<%= book.author %>">
-            <input type="hidden" name="cover_url" value="<%= book.cover_url %>">
-            <% } %>
-            <input type="hidden" name="_csrf" value="<%= csrfToken %>">
-
-            <!-- Cover Section -->
-            <div class="bg-emerald-50 p-8 flex flex-col items-center justify-center md:w-1/3">
-                <img src="<%= book.cover_url %>" alt="<%= book.title %>" class="w-32 shadow-lg rounded mb-4 transform -rotate-3 hover:rotate-0 transition-transform duration-300">
-                <h3 class="text-center font-bold text-emerald-900 leading-tight"><%= book.title %></h3>
-                <p class="text-center text-sm text-emerald-600 mt-1"><%= book.author %></p>
-                <% if (isEdit) { %>
-                    <button type="button" 
-                            hx-post="/books/<%= book.id %>/delete" 
-                            hx-confirm="Are you sure you want to delete this book?"
-                            class="mt-6 text-red-500 hover:text-red-700 text-sm font-bold flex items-center">
-                        <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
-                        Delete Book
-                    </button>
+                <input type="hidden" name="google_books_id" value="<%= book.google_id %>">
+                <input type="hidden" name="title" value="<%= book.title %>">
+                <input type="hidden" name="author" value="<%= book.author %>">
+                <input type="hidden" name="cover_url" value="<%= book.cover_url %>">
                 <% } %>
-            </div>
+                    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
 
-            <!-- Form Section -->
-            <div class="p-8 md:w-2/3 space-y-6">
-                <h2 class="text-2xl font-bold text-slate-800"><%= isEdit ? 'Update your review' : 'How was it?' %></h2>
-
-                <!-- Stars -->
-                <div>
-                    <label class="block text-sm font-medium text-slate-500 mb-2">Rating</label>
-                    <div x-data="{ rating: <%= book.rating || 0 %>, hover: 0 }" class="flex space-x-1">
-                      <input type="hidden" name="rating" :value="rating" required>
-                      
-                      <template x-for="star in 5">
-                        <button 
-                          type="button"
-                          @click="rating = star" 
-                          @mouseover="hover = star" 
-                          @mouseleave="hover = 0"
-                          class="focus:outline-none transition-transform duration-100 hover:scale-110"
-                        >
-                          <svg class="w-10 h-10" :class="(hover >= star || rating >= star) ? 'text-yellow-400 fill-current' : 'text-gray-200 fill-current'" viewBox="0 0 24 24">
-                            <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/>
-                          </svg>
-                        </button>
-                      </template>
+                    <!-- Cover Section -->
+                    <div class="bg-emerald-50 p-8 flex flex-col items-center justify-center md:w-1/3">
+                        <img src="<%= book.cover_url %>" alt="<%= book.title %>"
+                            class="w-32 shadow-lg rounded mb-4 transform -rotate-3 hover:rotate-0 transition-transform duration-300">
+                        <h3 class="text-center font-bold text-emerald-900 leading-tight">
+                            <%= book.title %>
+                        </h3>
+                        <p class="text-center text-sm text-emerald-600 mt-1">
+                            <%= book.author %>
+                        </p>
+                        <% if (isEdit) { %>
+                            <button type="button" hx-post="/books/<%= book.id %>/delete"
+                                hx-confirm="Are you sure you want to delete this book?"
+                                class="mt-6 text-red-500 hover:text-red-700 text-sm font-bold flex items-center">
+                                <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16">
+                                    </path>
+                                </svg>
+                                Delete Book
+                            </button>
+                            <% } %>
                     </div>
-                </div>
 
-                <!-- Tags -->
-                <!-- Tags -->
-                <div x-data="{ 
+                    <!-- Form Section -->
+                    <div class="p-8 md:w-2/3 space-y-6" x-data="{ rating: <%= book.rating || 0 %>, hover: 0 }">
+                        <h2 class="text-2xl font-bold text-slate-800">
+                            <%= isEdit ? 'Update your review' : 'How was it?' %>
+                        </h2>
+
+                        <!-- Stars -->
+                        <div>
+                            <label class="block text-sm font-medium text-slate-500 mb-2">Rating</label>
+                            <div class="flex space-x-1 items-center">
+                                <input type="hidden" name="rating" :value="rating" required>
+
+                                <!-- Didn't Finish (-1) -->
+                                <button type="button" @click="rating = -1" @mouseover="hover = -1"
+                                    @mouseleave="hover = 0"
+                                    class="focus:outline-none transition-transform duration-100 hover:scale-110 mr-2"
+                                    title="Didn't Finish">
+                                    <span class="text-3xl leading-none"
+                                        :class="(hover === -1 || rating === -1) ? 'grayscale-0 opacity-100' : 'grayscale opacity-30'">🥱</span>
+                                </button>
+
+                                <template x-for="star in 5">
+                                    <button type="button" @click="rating = star" @mouseover="hover = star"
+                                        @mouseleave="hover = 0"
+                                        class="focus:outline-none transition-transform duration-100 hover:scale-110">
+                                        <svg class="w-10 h-10"
+                                            :class="(hover >= star || rating >= star) ? 'text-yellow-400 fill-current' : 'text-gray-200 fill-current'"
+                                            viewBox="0 0 24 24">
+                                            <path
+                                                d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" />
+                                        </svg>
+                                    </button>
+                                </template>
+                            </div>
+                            <div x-show="rating === 0" class="text-red-500 text-xs mt-1" style="display: none;">Please
+                                select a rating</div>
+                        </div>
+
+                        <!-- Tags -->
+                        <!-- Tags -->
+                        <div x-data="{ 
                     selectedTags: '<%= book.tags || '' %>'.split(',').filter(Boolean),
                     allTags: [],
                     showModal: false,
@@ -107,128 +128,118 @@
                         return this.allTags;
                     }
                 }" class="space-y-4">
-                    <label class="block text-sm font-medium text-slate-500 mb-2">Tags</label>
-                    <input type="hidden" name="tags" :value="selectedTags.join(',')">
-                    
-                    <!-- Main View: Selected + Top Popular + Add Button -->
-                    <div class="flex flex-wrap gap-2 items-center">
-                        <!-- Selected Tags -->
-                        <template x-for="tag in selectedTags" :key="'sel-'+tag">
-                            <button 
-                                type="button"
-                                @click="toggleTag(tag)"
-                                class="px-4 py-2 rounded-full border text-sm font-medium transition-colors bg-emerald-100 text-emerald-700 border-emerald-300 flex items-center group"
-                            >
-                                <span x-text="tag"></span>
-                                <span class="ml-2 text-emerald-500 hover:text-emerald-900 group-hover:text-emerald-900">&times;</span>
-                            </button>
-                        </template>
+                            <label class="block text-sm font-medium text-slate-500 mb-2">Tags</label>
+                            <input type="hidden" name="tags" :value="selectedTags.join(',')">
 
-                        <!-- Top Popular (that are not selected) -->
-                        <template x-for="tag in popularTags.filter(t => !selectedTags.includes(t))" :key="'pop-'+tag">
-                            <button 
-                                type="button"
-                                @click="toggleTag(tag)"
-                                class="px-4 py-2 rounded-full border text-sm font-medium transition-colors bg-gray-50 text-slate-600 border-gray-200 hover:bg-gray-100"
-                            >
-                                <span class="text-slate-400 mr-1">+</span>
-                                <span x-text="tag"></span>
-                            </button>
-                        </template>
-
-                        <!-- Add Tag Button -->
-                        <button 
-                            type="button"
-                            @click="showModal = true"
-                            class="px-4 py-2 rounded-full border border-dashed border-gray-300 text-slate-500 text-sm hover:border-emerald-400 hover:text-emerald-600 transition-colors"
-                        >
-                            + Add Tag
-                        </button>
-                    </div>
-
-                    <!-- Modal -->
-                    <div 
-                        x-show="showModal" 
-                        style="display: none;"
-                        class="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
-                        x-transition.opacity
-                    >
-                        <div 
-                            @click.away="showModal = false"
-                            class="bg-white rounded-3xl shadow-2xl w-full max-w-lg overflow-hidden flex flex-col max-h-[80vh]"
-                        >
-                            <div class="p-6 border-b flex justify-between items-center bg-gray-50">
-                                <h3 class="text-xl font-bold text-slate-800">Manage Tags</h3>
-                                <button type="button" @click="showModal = false" class="text-slate-400 hover:text-slate-600">
-                                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-                                </button>
-                            </div>
-                            
-                            <!-- Custom Tag Input -->
-                            <div class="p-6 pb-2 border-b">
-                                <div class="relative">
-                                    <input 
-                                        type="text" 
-                                        x-model="newTagInput" 
-                                        @keydown.enter.prevent="addCustomTag()"
-                                        placeholder="Type new tag and press Enter..." 
-                                        class="w-full p-4 pr-12 rounded-xl border-2 border-gray-200 focus:border-emerald-400 focus:ring-0 text-lg shadow-sm"
-                                    >
-                                    <button 
-                                        type="button" 
-                                        @click="addCustomTag()"
-                                        class="absolute right-3 top-3 p-2 bg-emerald-100 text-emerald-600 rounded-lg hover:bg-emerald-200 disabled:opacity-50"
-                                        :disabled="!newTagInput.trim()"
-                                    >
-                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                            <!-- Main View: Selected + Top Popular + Add Button -->
+                            <div class="flex flex-wrap gap-2 items-center">
+                                <!-- Selected Tags -->
+                                <template x-for="tag in selectedTags" :key="'sel-'+tag">
+                                    <button type="button" @click="toggleTag(tag)"
+                                        class="px-4 py-2 rounded-full border text-sm font-medium transition-colors bg-emerald-100 text-emerald-700 border-emerald-300 flex items-center group">
+                                        <span x-text="tag"></span>
+                                        <span
+                                            class="ml-2 text-emerald-500 hover:text-emerald-900 group-hover:text-emerald-900">&times;</span>
                                     </button>
-                                </div>
-                            </div>
+                                </template>
 
-                            <!-- Scrollable Tag List -->
-                            <div class="p-6 overflow-y-auto flex-1 custom-scrollbar">
-                                <div class="flex flex-wrap gap-2">
-                                    <template x-for="tag in sortedAllTags" :key="'modal-'+tag">
-                                        <button 
-                                            type="button"
-                                            @click="toggleTag(tag)"
-                                            :class="selectedTags.includes(tag) ? 'bg-emerald-100 text-emerald-700 border-emerald-300 ring-2 ring-emerald-200' : 'bg-gray-50 text-slate-600 border-gray-200 hover:border-gray-300'"
-                                            class="px-4 py-2 rounded-full border text-sm font-medium transition-all"
-                                        >
-                                            <span x-text="tag"></span>
-                                            <span x-show="selectedTags.includes(tag)" class="ml-1 text-emerald-600">&check;</span>
-                                        </button>
-                                    </template>
-                                </div>
-                            </div>
+                                <!-- Top Popular (that are not selected) -->
+                                <template x-for="tag in popularTags.filter(t => !selectedTags.includes(t))"
+                                    :key="'pop-'+tag">
+                                    <button type="button" @click="toggleTag(tag)"
+                                        class="px-4 py-2 rounded-full border text-sm font-medium transition-colors bg-gray-50 text-slate-600 border-gray-200 hover:bg-gray-100">
+                                        <span class="text-slate-400 mr-1">+</span>
+                                        <span x-text="tag"></span>
+                                    </button>
+                                </template>
 
-                            <div class="p-6 border-t bg-gray-50 flex justify-end">
-                                <button 
-                                    type="button" 
-                                    @click="showModal = false"
-                                    class="px-8 py-3 bg-emerald-500 hover:bg-emerald-600 text-white font-bold rounded-xl shadow-lg hover:shadow-xl transition-all"
-                                >
-                                    Done
+                                <!-- Add Tag Button -->
+                                <button type="button" @click="showModal = true"
+                                    class="px-4 py-2 rounded-full border border-dashed border-gray-300 text-slate-500 text-sm hover:border-emerald-400 hover:text-emerald-600 transition-colors">
+                                    + Add Tag
                                 </button>
+                            </div>
+
+                            <!-- Modal -->
+                            <div x-show="showModal" style="display: none;"
+                                class="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
+                                x-transition.opacity>
+                                <div @click.away="showModal = false"
+                                    class="bg-white rounded-3xl shadow-2xl w-full max-w-lg overflow-hidden flex flex-col max-h-[80vh]">
+                                    <div class="p-6 border-b flex justify-between items-center bg-gray-50">
+                                        <h3 class="text-xl font-bold text-slate-800">Manage Tags</h3>
+                                        <button type="button" @click="showModal = false"
+                                            class="text-slate-400 hover:text-slate-600">
+                                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                    d="M6 18L18 6M6 6l12 12"></path>
+                                            </svg>
+                                        </button>
+                                    </div>
+
+                                    <!-- Custom Tag Input -->
+                                    <div class="p-6 pb-2 border-b">
+                                        <div class="relative">
+                                            <input type="text" x-model="newTagInput"
+                                                @keydown.enter.prevent="addCustomTag()"
+                                                placeholder="Type new tag and press Enter..."
+                                                class="w-full p-4 pr-12 rounded-xl border-2 border-gray-200 focus:border-emerald-400 focus:ring-0 text-lg shadow-sm">
+                                            <button type="button" @click="addCustomTag()"
+                                                class="absolute right-3 top-3 p-2 bg-emerald-100 text-emerald-600 rounded-lg hover:bg-emerald-200 disabled:opacity-50"
+                                                :disabled="!newTagInput.trim()">
+                                                <svg class="w-5 h-5" fill="none" stroke="currentColor"
+                                                    viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                                        stroke-width="2" d="M12 4v16m8-8H4"></path>
+                                                </svg>
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                    <!-- Scrollable Tag List -->
+                                    <div class="p-6 overflow-y-auto flex-1 custom-scrollbar">
+                                        <div class="flex flex-wrap gap-2">
+                                            <template x-for="tag in sortedAllTags" :key="'modal-'+tag">
+                                                <button type="button" @click="toggleTag(tag)"
+                                                    :class="selectedTags.includes(tag) ? 'bg-emerald-100 text-emerald-700 border-emerald-300 ring-2 ring-emerald-200' : 'bg-gray-50 text-slate-600 border-gray-200 hover:border-gray-300'"
+                                                    class="px-4 py-2 rounded-full border text-sm font-medium transition-all">
+                                                    <span x-text="tag"></span>
+                                                    <span x-show="selectedTags.includes(tag)"
+                                                        class="ml-1 text-emerald-600">&check;</span>
+                                                </button>
+                                            </template>
+                                        </div>
+                                    </div>
+
+                                    <div class="p-6 border-t bg-gray-50 flex justify-end">
+                                        <button type="button" @click="showModal = false"
+                                            class="px-8 py-3 bg-emerald-500 hover:bg-emerald-600 text-white font-bold rounded-xl shadow-lg hover:shadow-xl transition-all">
+                                            Done
+                                        </button>
+                                    </div>
+                                </div>
                             </div>
                         </div>
+
+                        <!-- Notes -->
+                        <div>
+                            <label class="block text-sm font-medium text-slate-500 mb-2">My Thoughts</label>
+                            <textarea name="notes" rows="3"
+                                class="w-full p-3 rounded-xl border border-gray-200 focus:border-emerald-400 focus:ring-0 text-slate-700 resize-none"
+                                placeholder="What was your favorite part? What you did or didn't like about this book?"><%= book.notes || '' %></textarea>
+                        </div>
+
+                        <!-- Actions -->
+                        <div class="flex justify-end space-x-3 pt-4">
+                            <a href="/dashboard"
+                                class="px-6 py-3 text-slate-500 font-bold hover:bg-slate-50 rounded-xl transition-colors">Cancel</a>
+                            <button type="submit" :disabled="rating === 0"
+                                :class="rating === 0 ? 'opacity-50 cursor-not-allowed bg-gray-300' : 'bg-emerald-400 hover:bg-emerald-500 hover:shadow-xl hover:-translate-y-0.5'"
+                                class="px-8 py-3 text-white font-bold rounded-xl shadow-lg transition-all transform">
+                                <%= isEdit ? 'Update Review' : 'Save to Library' %>
+                            </button>
+                        </div>
                     </div>
-                </div>
-
-                <!-- Notes -->
-                <div>
-                    <label class="block text-sm font-medium text-slate-500 mb-2">My Thoughts</label>
-                    <textarea name="notes" rows="3" class="w-full p-3 rounded-xl border border-gray-200 focus:border-emerald-400 focus:ring-0 text-slate-700 resize-none" placeholder="What was your favorite part?"><%= book.notes || '' %></textarea>
-                </div>
-
-                <!-- Actions -->
-                <div class="flex justify-end space-x-3 pt-4">
-                    <a href="/dashboard" class="px-6 py-3 text-slate-500 font-bold hover:bg-slate-50 rounded-xl transition-colors">Cancel</a>
-                    <button type="submit" class="px-8 py-3 bg-emerald-400 hover:bg-emerald-500 text-white font-bold rounded-xl shadow-lg hover:shadow-xl transition-all transform hover:-translate-y-0.5">
-                        <%= isEdit ? 'Update Review' : 'Save to Library' %>
-                    </button>
-                </div>
-            </div>
         </form>
     </div>
 </div>
