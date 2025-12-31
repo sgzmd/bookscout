@@ -193,6 +193,10 @@ router.post('/:id/delete', (req, res) => {
 
     if (info.changes === 0) return res.status(404).send('Book not found');
 
+    if (req.get('HX-Request')) {
+      return res.status(200).set('HX-Redirect', '/dashboard').send();
+    }
+
     res.redirect('/dashboard');
   } catch (error) {
     console.error('Delete book error:', error);

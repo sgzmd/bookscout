@@ -114,4 +114,65 @@ describe('Books Route', () => {
     expect(res.status).toBe(400);
     expect(res.text).toContain('Rating is required');
   });
+
+  it('should delete a book', async () => {
+    const agent = request.agent(app);
+    await agent.get('/auth/dev');
+    const dashboard = await agent.get('/dashboard');
+    const csrfToken = dashboard.text.match(/name="csrf-token" content="(.*?)"/)[1];
+
+    // Create a book first
+    await agent.post('/books')
+      .type('form')
+      .send({
+        google_books_id: 'del123',
+        title: 'Book to Delete',
+        author: 'Deletable Author',
+        rating: 3,
+        _csrf: csrfToken
+      });
+
+    const book = db.prepare('SELECT id FROM books WHERE title = ?').get('Book to Delete');
+
+    // Delete it
+    const res = await agent.post(`/books/${book.id}/delete`)
+      .type('form')
+      .send({ _csrf: csrfToken });
+
+    expect(res.status).toBe(302);
+    expect(res.header.location).toBe('/dashboard');
+
+    const check = db.prepare('SELECT * FROM books WHERE id = ?').get(book.id);
+    expect(check).toBeUndefined();
+  });
+
+  it('should handle HTMX delete with client-side redirect', async () => {
+    const agent = request.agent(app);
+    await agent.get('/auth/dev');
+    const dashboard = await agent.get('/dashboard');
+    const csrfToken = dashboard.text.match(/name="csrf-token" content="(.*?)"/)[1];
+
+    // Create a book
+    await agent.post('/books')
+      .type('form')
+      .send({
+        google_books_id: 'htmx123',
+        title: 'HTMX Book',
+        author: 'HTMX Author',
+        rating: 4,
+        _csrf: csrfToken
+      });
+
+    const book = db.prepare('SELECT id FROM books WHERE title = ?').get('HTMX Book');
+
+    // Delete with HTMX header
+    const res = await agent.post(`/books/${book.id}/delete`)
+      .set('HX-Request', 'true')
+      .type('form')
+      .send({ _csrf: csrfToken });
+
+    // HTMX requires a 200 OK with HX-Redirect header for a clear client-side redirect
+    expect(res.status).toBe(200);
+    expect(res.header['hx-redirect']).toBe('/dashboard');
+  });
 });
