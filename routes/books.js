@@ -59,17 +59,26 @@ router.get('/review/:google_id', async (req, res) => {
   // In a real app, we might want to cache this or pass data from search to avoid double fetch.
   // For this prototype, re-fetching is fine.
   try {
-    const apiKey = process.env.GOOGLE_API_KEY;
+    const apiKey = process.env.GOOGLE_BOOKS_API_KEY;
     const url = `https://www.googleapis.com/books/v1/volumes/${google_id}?key=${apiKey || ''}`;
 
-    // Mock for test/dev if needed
-    // Mock for test/dev if needed
     if (process.env.NODE_ENV === 'test' && !apiKey) {
-      // We'll rely on global fetch mock in tests
+      // Mock for test
     }
 
     const response = await fetch(url);
-    if (!response.ok) throw new Error('Failed to fetch book details');
+    if (!response.ok) {
+      let errorText = '';
+      if (typeof response.text === 'function') {
+        try {
+          errorText = await response.text();
+        } catch (e) {
+          // ignore
+        }
+      }
+      console.error(`Google Books API error (${response.status}) on details fetch:`, errorText || response.statusText);
+      throw new Error(`Failed to fetch book details: ${response.statusText}`);
+    }
     const data = await response.json();
 
     const book = {

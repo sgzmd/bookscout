@@ -32,7 +32,7 @@
     <!-- HTMX -->
     <script src="https://unpkg.com/htmx.org@1.9.10"></script>
     <script>
-        document.body.addEventListener('htmx:configRequest', (event) => {
+        document.addEventListener('htmx:configRequest', (event) => {
             event.detail.headers['X-CSRF-Token'] = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
         });
     </script>

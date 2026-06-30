@@ -9,7 +9,10 @@ router.get('/', async (req, res) => {
   }
 
   try {
-    const apiKey = process.env.GOOGLE_API_KEY;
+    const apiKey = process.env.GOOGLE_BOOKS_API_KEY;
+    if (!apiKey) {
+      console.warn('Warning: GOOGLE_BOOKS_API_KEY is not set in environment variables. Google Books API requests may be heavily rate-limited or blocked.');
+    }
     // Fallback or error if no key? For now, let's assume key might be missing or we handle it.
     // If testing, we might mock this function entirely.
 
@@ -30,7 +33,15 @@ router.get('/', async (req, res) => {
     const response = await fetch(url);
 
     if (!response.ok) {
-      console.error('Google Books API error:', response.statusText);
+      let errorText = '';
+      if (typeof response.text === 'function') {
+        try {
+          errorText = await response.text();
+        } catch (e) {
+          // ignore
+        }
+      }
+      console.error(`Google Books API error (${response.status}):`, errorText || response.statusText);
       return res.status(502).send('<div class="p-4 text-red-500">Error fetching books</div>');
     }
 
